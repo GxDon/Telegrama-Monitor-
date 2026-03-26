@@ -1,0 +1,66 @@
+import requests
+import time
+import random
+from datetime import datetime
+from colorama import Fore, Style, init
+
+# ===== CONFIG =====
+BOT_TOKEN = "TU_TOKEN_AQUI"
+CHAT_ID = "TU_CHAT_ID_AQUI"
+
+# Inicializar colorama
+init(autoreset=True)
+
+# ===== FUNCION TELEGRAM =====
+def send_telegram(msg):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    data = {"chat_id": CHAT_ID, "text": msg}
+    try:
+        response = requests.post(url, data=data)
+        if response.status_code != 200:
+            print(Fore.RED + f"[ERROR] Telegram no respondió correctamente: {response.text}")
+    except Exception as e:
+        print(Fore.RED + f"[ERROR] No se pudo enviar el mensaje: {e}")
+
+# ===== PANEL =====
+def banner():
+    print(Fore.GREEN + """
+╔══════════════════════════════╗
+║      PANEL PRO MONITOR       ║
+║      Telegram + Logs         ║
+╚══════════════════════════════╝
+""" + Style.RESET_ALL)
+
+# ===== SIMULADOR EVENTOS =====
+def generar_evento():
+    eventos = [
+        "Nuevo acceso detectado",
+        "Intento de conexión",
+        "Dispositivo conectado",
+        "Actividad sospechosa",
+        "Nuevo visitante"
+    ]
+    return random.choice(eventos)
+
+# ===== LOOP PRINCIPAL =====
+def main():
+    banner()
+    print("[+] Iniciando monitoreo...\n")
+
+    while True:
+        evento = generar_evento()
+        hora = datetime.now().strftime("%H:%M:%S")
+
+        mensaje = f"🚨 EVENTO\n📌 {evento}\n⏰ {hora}"
+
+        # Mostrar en consola
+        print(Fore.YELLOW + f"[{hora}] {evento}" + Style.RESET_ALL)
+
+        # Enviar a Telegram
+        send_telegram(mensaje)
+
+        time.sleep(10)  # espera 10 segundos
+
+# ===== EJECUTAR SCRIPT =====
+if __name__ == "__main__":
+    main()
