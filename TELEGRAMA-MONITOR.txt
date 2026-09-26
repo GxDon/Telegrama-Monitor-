@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+import time
+import urllib.request
+
+
+def telegram_api(token, method):
+    url = f"https://api.telegram.org/bot{token}/{method}"
+    request = urllib.request.Request(url)
+
+    with urllib.request.urlopen(request, timeout=15) as response:
+        return json.loads(response.read().decode())
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Telegrama-Monitor"
+    )
+
+    parser.add_argument(
+        "--token",
+        default=os.getenv("TELEGRAM_BOT_TOKEN")
+    )
+
+    parser.add_argument(
+        "--watch",
+        action="store_true"
+    )
+
+    args = parser.parse_args()
+
+    if not args.token:
+        raise SystemExit(
+            "[!] Define TELEGRAM_BOT_TOKEN o utiliza --token"
+        )
+
+    result = telegram_api(args.token, "getMe")
+
+    if not result.get("ok"):
+        raise SystemExit("[!] Telegram API rechazó el token")
+
+    bot = result["result"]
+
+    print("[+] Telegram API: OK")
+    print(f"[+] Bot: @{bot.get('username', 'unknown')}")
+
+    if not args.watch:
+        return
+
+    print("[+] Modo monitor activado")
+
+    while True:
+        try:
+            result = telegram_api(args.token, "getUpdates")
+
+            print(
+                f"[+] Updates recibidos: "
+                f"{len(result.get('result', []))}"
+            )
+
+        except Exception as error:
+            print(f"[!] Error: {error}")
+
+        time.sleep(10)
+
+
+if name == "main":
+    main()
